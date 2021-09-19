@@ -3,14 +3,15 @@ from json import dump
 from Gameboard import Gameboard
 import db
 
-
 app = Flask(__name__)
 
 import logging
+
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
-game = None
+global game
+game = Gameboard()
 
 '''
 Implement '/' endpoint
@@ -22,7 +23,7 @@ Initial Webpage where gameboard is initialized
 
 @app.route('/', methods=['GET'])
 def player1_connect():
-    pass
+    return render_template("player1_connect.html", status="Pick a Color.")
 
 
 '''
@@ -49,7 +50,9 @@ Assign player1 their color
 
 @app.route('/p1Color', methods=['GET'])
 def player1_config():
-    pass
+    p1color_picked = request.args.get('color')
+    game.player1 = p1color_picked
+    return render_template("player1_connect.html", status=game.player1)
 
 
 '''
@@ -64,7 +67,13 @@ Assign player2 their color
 
 @app.route('/p2Join', methods=['GET'])
 def p2Join():
-    pass
+    if game.player1 == 'red':
+        game.player2 = 'yellow'
+    elif game.player1 == 'yellow':
+        game.player2 = 'red'
+    else:
+        game.player2 = "Error - Player 1 has not selected a color"
+    return render_template("p2Join.html", status=game.player2)
 
 
 '''
@@ -78,20 +87,56 @@ If invalid == True, also return reason= <Why Move is Invalid>
 Process Player 1's move
 '''
 
-
 @app.route('/move1', methods=['POST'])
 def p1_move():
-    pass
+    post_det = request.get_json()
+    col_num = int((post_det['column'])[-1])
+
+    if game.remaining_moves == 0:
+        return jsonify(move=game.board, invalid=True, reason="No more moves remaining!", winner=game.game_result)
+    if game.current_turn != 'p1':
+        return jsonify(move=game.board, invalid=True, reason="Not your turn", winner=game.game_result)
+
+    else:
+        for row_num in range(5, -1, -1):
+            if game.board[row_num][col_num - 1] == 0:
+                game.board[row_num][col_num - 1] = game.player1
+                break
+            else:
+                row_num -= 1
+
+    game.current_turn = 'p2'
+    game.remaining_moves -= 1
+
+    return jsonify(move=game.board, invalid=False, winner=game.game_result)
+
 
 '''
-Same as '/move1' but instead proccess Player 2
+Same as '/move1' but instead process Player 2
 '''
-
 
 @app.route('/move2', methods=['POST'])
 def p2_move():
-    pass
+    post_det = request.get_json()
+    col_num = int((post_det['column'])[-1])
+    if game.remaining_moves == 0:
+        return jsonify(move=game.board, invalid=True, reason="No more moves remaining!", winner=game.game_result)
 
+    if game.current_turn != 'p2':
+        return jsonify(move=game.board, invalid=True, reason="Not your turn", winner=game.game_result)
+
+    else:
+        for row_num in range(5, -1, -1):
+            if game.board[row_num][col_num - 1] == 0:
+                game.board[row_num][col_num - 1] = game.player2
+                break
+            else:
+                row_num -= 1
+
+    game.current_turn = 'p1'
+    game.remaining_moves -= 1
+
+    return jsonify(move=game.board, invalid=False, winner=game.game_result)
 
 
 if __name__ == '__main__':
