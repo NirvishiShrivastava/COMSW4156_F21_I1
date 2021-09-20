@@ -99,16 +99,11 @@ def p1_move():
         return jsonify(move=game.board, invalid=True, reason="Not your turn", winner=game.game_result)
 
     else:
-        for row_num in range(5, -1, -1):
-            if game.board[row_num][col_num - 1] == 0:
-                game.board[row_num][col_num - 1] = game.player1
-                break
-            else:
-                row_num -= 1
+        row_num = fill_row(game.player1, col_num)
 
-        res = win_logic(row_num, col_num, game.player1)
-        if res:
-            game.result = "Winner is: " + game.player1
+        if win_logic(row_num, col_num, game.player1):
+            game.game_result = "Player1"
+            return jsonify(move=game.board, invalid=False, winner=game.game_result)
 
     game.current_turn = 'p2'
     game.remaining_moves -= 1
@@ -132,17 +127,11 @@ def p2_move():
         return jsonify(move=game.board, invalid=True, reason="Not your turn", winner=game.game_result)
 
     else:
-        for row_num in range(5, -1, -1):
-            if game.board[row_num][col_num - 1] == 0:
-                game.board[row_num][col_num - 1] = game.player2
+        row_num = fill_row(game.player2, col_num)
 
-                break
-            else:
-                row_num -= 1
-
-        res = win_logic(row_num, col_num, game.player2)
-        if res:
-            game.result = "Winner is: " + game.player2
+        if win_logic(row_num, col_num, game.player2):
+            game.game_result = "Player2"
+            return jsonify(move=game.board, invalid=False, winner=game.game_result)
 
     game.current_turn = 'p1'
     game.remaining_moves -= 1
@@ -150,20 +139,59 @@ def p2_move():
     return jsonify(move=game.board, invalid=False, winner=game.game_result)
 
 
+def fill_row(player, col_num):
+    for row_num in range(5, -1, -1):
+        if game.board[row_num][col_num - 1] == 0:
+            game.board[row_num][col_num - 1] = player
+            break
+        else:
+            row_num -= 1
+            if row_num == -1:
+                return jsonify(move=game.board, invalid=True, reason="This column is already filled",
+                               winner=game.game_result)
+    return row_num
+
+
 def win_logic(row_num, col_num, player):
-    if col_num + 3 <= 6:
-        if game.board[row_num][col_num] == game.board[row_num][col_num + 1] == game.board[row_num][col_num + 2] == \
-                game.board[row_num][col_num + 3] == player:
-            return True
-    if row_num + 3 <= 5:
-        if game.board[row_num][col_num] == game.board[row_num+1][col_num] == game.board[row_num+2][col_num] == \
-                game.board[row_num+3][col_num] == player:
-            return True
-    if row_num + 3 <= 5 and col_num + 3 <= 6:
-        if game.board[row_num][col_num] == game.board[row_num + 1][col_num + 1] == game.board[row_num + 2][col_num + 2] == \
-                game.board[row_num + 3][col_num + 3] == player:
-            return True
-    return False
+    """
+    Horizontal Win
+    """
+    print("Win logic called for row, col" + str(row_num) + "," + str(col_num))
+    counter1 = 0
+    for c in range(0, 7):
+        if game.board[row_num][c] == player:
+            counter1 += 1
+            print("Counter for row and col -- ", counter1, row_num, c)
+    if counter1 == 4:
+        return True
+    else:
+        return False
+
+    """
+    Vertical Win
+    """
+    counter2 = 0
+    for r in range(0, 6):
+        if game.board[r][col_num] == player:
+            counter2 += 1
+            print("Counter for row and col -- ", counter2, r, col_num)
+    if counter2 == 4:
+        return True
+    else:
+        return False
+
+    """
+    Diagonal Win
+    """
+    counter3 = 0
+    for r in range(0, 6):
+        for c in range(0, 7):
+            if game.board[r][c] == player:
+                counter3 += 1
+    if counter3 == 4:
+        return True
+    else:
+        return False
 
 
 if __name__ == '__main__':
