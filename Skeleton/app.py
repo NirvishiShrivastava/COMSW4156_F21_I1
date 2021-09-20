@@ -87,13 +87,14 @@ If invalid == True, also return reason= <Why Move is Invalid>
 Process Player 1's move
 '''
 
+
 @app.route('/move1', methods=['POST'])
 def p1_move():
     post_det = request.get_json()
     col_num = int((post_det['column'])[-1])
+    if game.remaining_moves == 1:
+        return jsonify(move=game.board, invalid=True, reason="Match Draw!", winner=game.game_result)
 
-    if game.remaining_moves == 0:
-        return jsonify(move=game.board, invalid=True, reason="No more moves remaining!", winner=game.game_result)
     if game.current_turn != 'p1':
         return jsonify(move=game.board, invalid=True, reason="Not your turn", winner=game.game_result)
 
@@ -105,6 +106,10 @@ def p1_move():
             else:
                 row_num -= 1
 
+        res = win_logic(row_num, col_num, game.player1)
+        if res:
+            game.result = "Winner is: " + game.player1
+
     game.current_turn = 'p2'
     game.remaining_moves -= 1
 
@@ -115,12 +120,13 @@ def p1_move():
 Same as '/move1' but instead process Player 2
 '''
 
+
 @app.route('/move2', methods=['POST'])
 def p2_move():
     post_det = request.get_json()
     col_num = int((post_det['column'])[-1])
-    if game.remaining_moves == 0:
-        return jsonify(move=game.board, invalid=True, reason="No more moves remaining!", winner=game.game_result)
+    if game.remaining_moves == 1:
+        return jsonify(move=game.board, invalid=True, reason="Match Draw!", winner=game.game_result)
 
     if game.current_turn != 'p2':
         return jsonify(move=game.board, invalid=True, reason="Not your turn", winner=game.game_result)
@@ -129,14 +135,35 @@ def p2_move():
         for row_num in range(5, -1, -1):
             if game.board[row_num][col_num - 1] == 0:
                 game.board[row_num][col_num - 1] = game.player2
+
                 break
             else:
                 row_num -= 1
+
+        res = win_logic(row_num, col_num, game.player2)
+        if res:
+            game.result = "Winner is: " + game.player2
 
     game.current_turn = 'p1'
     game.remaining_moves -= 1
 
     return jsonify(move=game.board, invalid=False, winner=game.game_result)
+
+
+def win_logic(row_num, col_num, player):
+    if col_num + 3 <= 6:
+        if game.board[row_num][col_num] == game.board[row_num][col_num + 1] == game.board[row_num][col_num + 2] == \
+                game.board[row_num][col_num + 3] == player:
+            return True
+    if row_num + 3 <= 5:
+        if game.board[row_num][col_num] == game.board[row_num+1][col_num] == game.board[row_num+2][col_num] == \
+                game.board[row_num+3][col_num] == player:
+            return True
+    if row_num + 3 <= 5 and col_num + 3 <= 6:
+        if game.board[row_num][col_num] == game.board[row_num + 1][col_num + 1] == game.board[row_num + 2][col_num + 2] == \
+                game.board[row_num + 3][col_num + 3] == player:
+            return True
+    return False
 
 
 if __name__ == '__main__':
