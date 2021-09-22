@@ -93,7 +93,7 @@ def p1_move():
     post_det = request.get_json()
     col_num = int((post_det['column'])[-1])
     col_num -= 1
-    if game.remaining_moves == 1:
+    if game.remaining_moves == 0:
         return jsonify(move=game.board, invalid=True, reason="Match Draw!", winner=game.game_result)
 
     if len(game.game_result) > 0:
@@ -105,7 +105,9 @@ def p1_move():
 
     else:
         row_num = fill_row(game.player1, col_num)
-        print("Win logic called by P1 for row, col----" + str(row_num) + "," + str(col_num))
+        if row_num < 0:
+            return jsonify(move=game.board, invalid=True, reason="This column is already filled",
+                           winner=game.game_result)
         if win_logic_h(row_num, game.player1) or win_logic_v(col_num, game.player1) or win_logic_d(row_num, col_num,
                                                                                                    game.player1):
             game.game_result = "Player1"
@@ -127,7 +129,7 @@ def p2_move():
     post_det = request.get_json()
     col_num = int((post_det['column'])[-1])
     col_num -= 1
-    if game.remaining_moves == 1:
+    if game.remaining_moves == 0:
         return jsonify(move=game.board, invalid=True, reason="Match Draw!", winner=game.game_result)
 
     if len(game.game_result) > 0:
@@ -139,7 +141,10 @@ def p2_move():
 
     else:
         row_num = fill_row(game.player2, col_num)
-        print("Win logic called by P2 for row, col----" + str(row_num) + "," + str(col_num))
+        if row_num < 0:
+            return jsonify(move=game.board, invalid=True, reason="This column is already filled",
+                           winner=game.game_result)
+
         if win_logic_h(row_num, game.player2) or win_logic_v(col_num, game.player2) or win_logic_d(row_num, col_num,
                                                                                                    game.player2):
             game.game_result = "Player2"
@@ -158,9 +163,7 @@ def fill_row(player, col_num):
             break
         else:
             row_num -= 1
-            if row_num == -1:
-                return jsonify(move=game.board, invalid=True, reason="This column is already filled",
-                               winner=game.game_result)
+
     return row_num
 
 
@@ -173,7 +176,6 @@ def win_logic_h(row_num, player):
     for c in range(0, 7):
         if game.board[row_num][c] == player:
             counter += 1
-            print("Counter for row and col -- ", counter, row_num, c)
             if counter == 4:
                 return True
         else:
@@ -188,7 +190,6 @@ def win_logic_v(col_num, player):
     for r in range(0, 6):
         if game.board[r][col_num] == player:
             counter += 1
-            print("Counter for row and col -- ", counter, r, col_num)
             if counter == 4:
                 return True
         else:
