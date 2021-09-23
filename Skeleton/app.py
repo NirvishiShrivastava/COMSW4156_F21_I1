@@ -93,6 +93,10 @@ def p1_move():
     post_det = request.get_json()
     col_num = int((post_det['column'])[-1])
     col_num -= 1
+
+    if game.player2 == "":
+        return jsonify(move=game.board, invalid=True, reason="Game cannot begin till both players join",
+                       winner=game.game_result)
     if game.remaining_moves == 0:
         return jsonify(move=game.board, invalid=True, reason="Match Draw!", winner=game.game_result)
 
