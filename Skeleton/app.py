@@ -10,7 +10,6 @@ import logging
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
-global game
 game = Gameboard()
 
 '''
@@ -112,7 +111,7 @@ def p1_move():
         if row_num < 0:
             return jsonify(move=game.board, invalid=True, reason="This column is already filled",
                            winner=game.game_result)
-        if win_logic_h(row_num, game.player1) or win_logic_v(col_num, game.player1) or win_logic_d(row_num, col_num,
+        if game.win_logic_h(row_num, game.player1) or game.win_logic_v(col_num, game.player1) or game.win_logic_d(row_num, col_num,
                                                                                                    game.player1):
             game.game_result = "Player1"
             return jsonify(move=game.board, invalid=False, winner=game.game_result)
@@ -149,7 +148,7 @@ def p2_move():
             return jsonify(move=game.board, invalid=True, reason="This column is already filled",
                            winner=game.game_result)
 
-        if win_logic_h(row_num, game.player2) or win_logic_v(col_num, game.player2) or win_logic_d(row_num, col_num,
+        if game.win_logic_h(row_num, game.player2) or game.win_logic_v(col_num, game.player2) or game.win_logic_d(row_num, col_num,
                                                                                                    game.player2):
             game.game_result = "Player2"
             return jsonify(move=game.board, invalid=False, winner=game.game_result)
@@ -169,76 +168,6 @@ def fill_row(player, col_num):
             row_num -= 1
 
     return row_num
-
-
-def win_logic_h(row_num, player):
-    """
-    Horizontal Win
-    """
-
-    counter = 0
-    for c in range(0, 7):
-        if game.board[row_num][c] == player:
-            counter += 1
-            if counter == 4:
-                return True
-        else:
-            counter = 0
-
-
-def win_logic_v(col_num, player):
-    """
-    Vertical Win
-    """
-    counter = 0
-    for r in range(0, 6):
-        if game.board[r][col_num] == player:
-            counter += 1
-            if counter == 4:
-                return True
-        else:
-            counter = 0
-
-
-def win_logic_d(r, c, player):
-    """
-    Diagonal Win
-    """
-    counter = 0
-    for i in range(4):
-        if r - i <= 5 and c - i <= 6 and game.board[r - i][c - i] == player:
-            counter += 1
-            if counter == 4:
-                return True
-        else:
-            counter = 0
-
-    counter = 0
-    for i in range(4):
-        if r + i <= 5 and c + i <= 6 and game.board[r + i][c + i] == player:
-            counter += 1
-            if counter == 4:
-                return True
-        else:
-            counter = 0
-
-    counter = 0
-    for i in range(4):
-        if r - i <= 5 and c + i <= 6 and game.board[r - i][c + i] == player:
-            counter += 1
-            if counter == 4:
-                return True
-        else:
-            counter = 0
-
-    counter = 0
-    for i in range(4):
-        if r + i <= 5 and c - i <= 6 and game.board[r + i][c - i] == player:
-            counter += 1
-            if counter == 4:
-                return True
-        else:
-            counter = 0
 
 
 if __name__ == '__main__':
