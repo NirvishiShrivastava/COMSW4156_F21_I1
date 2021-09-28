@@ -11,30 +11,17 @@ class Gameboard():
         self.current_turn = 'p1'
         self.remaining_moves = 42
 
-    def err_check(self, turn):
+    def check_both_players(self):
+        return self.player2 == ""
 
-        move = self.board
-        invalid = False
-        reason = ""
-        winner = self.game_result
+    def check_draw(self):
+        return self.remaining_moves == 0
 
-        if self.player2 == "":
-            invalid = True
-            reason = "Game cannot begin till both players join"
+    def check_winner(self):
+        return len(self.game_result) > 0
 
-        elif self.remaining_moves == 0:
-            invalid = True
-            reason = "Match Draw!"
-
-        elif len(self.game_result) > 0:
-            invalid = True
-            reason = "No moves allowed if there is a winner"
-
-        elif self.current_turn != turn:
-            invalid = True
-            reason = "Not your turn"
-
-        return move, invalid, reason, winner
+    def check_turn(self,turn_p):
+        return self.current_turn != turn_p
 
     def fill_row(self, player, col_num):
         for row_num in range(5, -1, -1):
@@ -69,6 +56,7 @@ class Gameboard():
                     return True
             else:
                 counter = 0
+        return False
 
     def win_logic_v(self, col_num, player):
         """
@@ -82,6 +70,7 @@ class Gameboard():
                     return True
             else:
                 counter = 0
+        return False
 
     def win_logic_d(self, r, c, player):
         """
@@ -122,10 +111,8 @@ class Gameboard():
                     return True
             else:
                 counter = 0
-'''
-Add Helper functions as needed to handle moves and update board and turns
+        return False
 
-'''
 
 
     

@@ -75,6 +75,29 @@ def p2Join():
     return render_template("p2Join.html", status=game.player2)
 
 
+def err_check(turn):
+
+    invalid = False
+    reason = ""
+
+    if game.check_both_players():
+        invalid = True
+        reason = "Game cannot begin till both players join"
+
+    elif game.check_draw():
+        invalid = True
+        reason = "Match Draw!"
+
+    elif game.check_winner():
+        invalid = True
+        reason = "No moves allowed if there is a winner"
+
+    elif game.check_turn(turn):
+        invalid = True
+        reason = "Not your turn"
+
+    return invalid, reason
+
 '''
 Implement '/move1' endpoint
 Method Type: POST
@@ -93,7 +116,10 @@ def p1_move():
     col_num = int((post_det['column'])[-1])
     col_num -= 1
 
-    move, invalid, reason, winner = game.err_check('p1')
+    move = game.board
+    winner = game.game_result
+
+    invalid, reason = err_check('p1')
 
     if not invalid:
         row_num = game.fill_row(game.player1, col_num)
@@ -122,7 +148,10 @@ def p2_move():
     col_num = int((post_det['column'])[-1])
     col_num -= 1
 
-    move, invalid, reason, winner = game.err_check('p2')
+    move = game.board
+    winner = game.game_result
+
+    invalid, reason = err_check('p2')
 
     if not invalid:
         row_num = game.fill_row(game.player2, col_num)
@@ -136,7 +165,7 @@ def p2_move():
         game.current_turn = 'p1'
         game.remaining_moves -= 1
 
-    return jsonify(move=game.board, invalid=invalid, reason=reason, winner=winner)
+    return jsonify(move=move, invalid=invalid, reason=reason, winner=winner)
 
 
 if __name__ == '__main__':
