@@ -97,17 +97,16 @@ def p1_move():
 
     if not invalid:
         row_num = game.fill_row(game.player1, col_num)
-        if row_num < 0:
-            invalid = True
-            reason = "This column is already filled"
+
+        invalid, reason = game.col_fill_err(row_num)
 
         if game.win_logic_h(row_num, game.player1) or game.win_logic_v(col_num, game.player1) or game.win_logic_d(
                 row_num, col_num, game.player1):
             game.game_result = "Player1"
             winner = game.game_result
 
-    game.current_turn = 'p2'
-    game.remaining_moves -= 1
+        game.current_turn = 'p2'
+        game.remaining_moves -= 1
 
     return jsonify(move=move, invalid=invalid, reason=reason, winner=winner)
 
@@ -127,16 +126,15 @@ def p2_move():
 
     if not invalid:
         row_num = game.fill_row(game.player2, col_num)
-        if row_num < 0:
-            invalid = True
-            reason = "This column is already filled"
+
+        invalid, reason = game.col_fill_err(row_num)
 
         if game.win_logic_h(row_num, game.player2) or game.win_logic_v(col_num, game.player2) or game.win_logic_d(row_num, col_num, game.player2):
             game.game_result = "Player2"
             winner = game.game_result
 
-    game.current_turn = 'p1'
-    game.remaining_moves -= 1
+        game.current_turn = 'p1'
+        game.remaining_moves -= 1
 
     return jsonify(move=game.board, invalid=invalid, reason=reason, winner=winner)
 

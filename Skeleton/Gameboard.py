@@ -46,6 +46,16 @@ class Gameboard():
 
         return row_num
 
+    def col_fill_err(self, row_num):
+        invalid = False
+        reason = ""
+
+        if row_num < 0:
+            invalid = True
+            reason = "This column is already filled"
+
+        return invalid, reason
+
     def win_logic_h(self, row_num, player):
         """
         Horizontal Win
