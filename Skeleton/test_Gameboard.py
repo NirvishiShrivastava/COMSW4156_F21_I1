@@ -112,3 +112,5 @@ class Test_TestGameboard(TestCase):
 
         self.assertTrue(game.win_logic_d(5, 0, "red"))
         self.assertFalse(game.win_logic_d(5, 1, "yellow"))
+
+        #Happy Path function
