@@ -93,33 +93,23 @@ def p1_move():
     col_num = int((post_det['column'])[-1])
     col_num -= 1
 
-    if game.player2 == "":
-        return jsonify(move=game.board, invalid=True, reason="Game cannot begin till both players join",
-                       winner=game.game_result)
-    if game.remaining_moves == 0:
-        return jsonify(move=game.board, invalid=True, reason="Match Draw!", winner=game.game_result)
+    move, invalid, reason, winner = game.err_check('p1')
 
-    if len(game.game_result) > 0:
-        return jsonify(move=game.board, invalid=True, reason="No moves allowed if there is a winner",
-                       winner=game.game_result)
-
-    if game.current_turn != 'p1':
-        return jsonify(move=game.board, invalid=True, reason="Not your turn", winner=game.game_result)
-
-    else:
-        row_num = fill_row(game.player1, col_num)
+    if not invalid:
+        row_num = game.fill_row(game.player1, col_num)
         if row_num < 0:
-            return jsonify(move=game.board, invalid=True, reason="This column is already filled",
-                           winner=game.game_result)
-        if game.win_logic_h(row_num, game.player1) or game.win_logic_v(col_num, game.player1) or game.win_logic_d(row_num, col_num,
-                                                                                                   game.player1):
+            invalid = True
+            reason = "This column is already filled"
+
+        if game.win_logic_h(row_num, game.player1) or game.win_logic_v(col_num, game.player1) or game.win_logic_d(
+                row_num, col_num, game.player1):
             game.game_result = "Player1"
-            return jsonify(move=game.board, invalid=False, winner=game.game_result)
+            winner = game.game_result
 
     game.current_turn = 'p2'
     game.remaining_moves -= 1
 
-    return jsonify(move=game.board, invalid=False, winner=game.game_result)
+    return jsonify(move=move, invalid=invalid, reason=reason, winner=winner)
 
 
 '''
@@ -132,42 +122,23 @@ def p2_move():
     post_det = request.get_json()
     col_num = int((post_det['column'])[-1])
     col_num -= 1
-    if game.remaining_moves == 0:
-        return jsonify(move=game.board, invalid=True, reason="Match Draw!", winner=game.game_result)
 
-    if len(game.game_result) > 0:
-        return jsonify(move=game.board, invalid=True, reason="No more moves allowed",
-                       winner=game.game_result)
+    move, invalid, reason, winner = game.err_check('p2')
 
-    if game.current_turn != 'p2':
-        return jsonify(move=game.board, invalid=True, reason="Not your turn", winner=game.game_result)
-
-    else:
-        row_num = fill_row(game.player2, col_num)
+    if not invalid:
+        row_num = game.fill_row(game.player2, col_num)
         if row_num < 0:
-            return jsonify(move=game.board, invalid=True, reason="This column is already filled",
-                           winner=game.game_result)
+            invalid = True
+            reason = "This column is already filled"
 
-        if game.win_logic_h(row_num, game.player2) or game.win_logic_v(col_num, game.player2) or game.win_logic_d(row_num, col_num,
-                                                                                                   game.player2):
+        if game.win_logic_h(row_num, game.player2) or game.win_logic_v(col_num, game.player2) or game.win_logic_d(row_num, col_num, game.player2):
             game.game_result = "Player2"
-            return jsonify(move=game.board, invalid=False, winner=game.game_result)
+            winner = game.game_result
 
     game.current_turn = 'p1'
     game.remaining_moves -= 1
 
-    return jsonify(move=game.board, invalid=False, winner=game.game_result)
-
-
-def fill_row(player, col_num):
-    for row_num in range(5, -1, -1):
-        if game.board[row_num][col_num] == 0:
-            game.board[row_num][col_num] = player
-            break
-        else:
-            row_num -= 1
-
-    return row_num
+    return jsonify(move=game.board, invalid=invalid, reason=reason, winner=winner)
 
 
 if __name__ == '__main__':

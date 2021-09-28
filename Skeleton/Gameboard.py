@@ -11,6 +11,41 @@ class Gameboard():
         self.current_turn = 'p1'
         self.remaining_moves = 42
 
+    def err_check(self, turn):
+
+        move = self.board
+        invalid = False
+        reason = ""
+        winner = self.game_result
+
+        if self.player2 == "":
+            invalid = True
+            reason = "Game cannot begin till both players join"
+
+        elif self.remaining_moves == 0:
+            invalid = True
+            reason = "Match Draw!"
+
+        elif len(self.game_result) > 0:
+            invalid = True
+            reason = "No moves allowed if there is a winner"
+
+        elif self.current_turn != turn:
+            invalid = True
+            reason = "Not your turn"
+
+        return move, invalid, reason, winner
+
+    def fill_row(self, player, col_num):
+        for row_num in range(5, -1, -1):
+            if self.board[row_num][col_num] == 0:
+                self.board[row_num][col_num] = player
+                break
+            else:
+                row_num -= 1
+
+        return row_num
+
     def win_logic_h(self, row_num, player):
         """
         Horizontal Win
@@ -80,7 +115,6 @@ class Gameboard():
 '''
 Add Helper functions as needed to handle moves and update board and turns
 
-test comment
 '''
 
 
