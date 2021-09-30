@@ -2,10 +2,11 @@ from flask import Flask, render_template, request, redirect, jsonify
 from json import dump
 from Gameboard import Gameboard
 import db
+import logging
+
 
 app = Flask(__name__)
 
-import logging
 
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
@@ -75,29 +76,6 @@ def p2Join():
     return render_template("p2Join.html", status=game.player2)
 
 
-def err_check(turn):
-
-    invalid = False
-    reason = ""
-
-    if game.check_both_players():
-        invalid = True
-        reason = "Game cannot begin till both players join"
-
-    elif game.check_draw():
-        invalid = True
-        reason = "Match Draw!"
-
-    elif game.check_winner():
-        invalid = True
-        reason = "No moves allowed if there is a winner"
-
-    elif game.check_turn(turn):
-        invalid = True
-        reason = "Not your turn"
-
-    return invalid, reason
-
 '''
 Implement '/move1' endpoint
 Method Type: POST
@@ -116,25 +94,10 @@ def p1_move():
     col_num = int((post_det['column'])[-1])
     col_num -= 1
 
-    move = game.board
-    winner = game.game_result
-
-    invalid, reason = err_check('p1')
-
-    if not invalid:
-        row_num = game.fill_row(game.player1, col_num)
-
-        invalid, reason = game.col_fill_err(row_num)
-
-        if game.win_logic_h(row_num, game.player1) or game.win_logic_v(col_num, game.player1) or game.win_logic_d(
-                row_num, col_num, game.player1):
-            game.game_result = "Player1"
-            winner = game.game_result
-
-        game.current_turn = 'p2'
-        game.remaining_moves -= 1
-
-    return jsonify(move=move, invalid=invalid, reason=reason, winner=winner)
+    invalid, reason, winner = game.player_move(
+        col_num, 'p1', game.player1)
+    return jsonify(move=game.board, invalid=invalid,
+                   reason=reason, winner=winner)
 
 
 '''
@@ -148,24 +111,10 @@ def p2_move():
     col_num = int((post_det['column'])[-1])
     col_num -= 1
 
-    move = game.board
-    winner = game.game_result
+    invalid, reason, winner = game.player_move(col_num, 'p2', game.player2)
 
-    invalid, reason = err_check('p2')
-
-    if not invalid:
-        row_num = game.fill_row(game.player2, col_num)
-
-        invalid, reason = game.col_fill_err(row_num)
-
-        if game.win_logic_h(row_num, game.player2) or game.win_logic_v(col_num, game.player2) or game.win_logic_d(row_num, col_num, game.player2):
-            game.game_result = "Player2"
-            winner = game.game_result
-
-        game.current_turn = 'p1'
-        game.remaining_moves -= 1
-
-    return jsonify(move=move, invalid=invalid, reason=reason, winner=winner)
+    return jsonify(move=game.board,
+                   invalid=invalid, reason=reason, winner=winner)
 
 
 if __name__ == '__main__':
