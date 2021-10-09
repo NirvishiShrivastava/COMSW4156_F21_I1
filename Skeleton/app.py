@@ -1,8 +1,8 @@
 from flask import Flask, render_template, request, redirect, jsonify
-from json import dump
 from Gameboard import Gameboard
 import db
 import logging
+import ast
 
 
 app = Flask(__name__)
@@ -23,6 +23,10 @@ Initial Webpage where gameboard is initialized
 
 @app.route('/', methods=['GET'])
 def player1_connect():
+    db.clear()
+    db.init_db()
+    global game
+    game = Gameboard()
     return render_template("player1_connect.html", status="Pick a Color.")
 
 
@@ -50,8 +54,20 @@ Assign player1 their color
 
 @app.route('/p1Color', methods=['GET'])
 def player1_config():
-    p1color_picked = request.args.get('color')
-    game.player1 = p1color_picked
+
+    state = db.getMove()
+
+    if state is None or len(state) == 0:
+        p1color_picked = request.args.get('color')
+        game.player1 = p1color_picked
+    else:
+        game.current_turn = state[0]
+        board_str = ast.literal_eval(state[1])
+        game.board = board_str
+        game.game_result = state[2]
+        game.player1 = state[3]
+        game.player2 = state[4]
+        game.remaining_moves = state[5]
     return render_template("player1_connect.html", status=game.player1)
 
 
@@ -67,12 +83,22 @@ Assign player2 their color
 
 @app.route('/p2Join', methods=['GET'])
 def p2Join():
-    if game.player1 == 'red':
-        game.player2 = 'yellow'
-    elif game.player1 == 'yellow':
-        game.player2 = 'red'
+    state = db.getMove()
+    if state is None or len(state) == 0:
+        if game.player1 == 'red':
+            game.player2 = 'yellow'
+        elif game.player1 == 'yellow':
+            game.player2 = 'red'
+        else:
+            game.player2 = "Error - Player 1 has not selected a color"
     else:
-        game.player2 = "Error - Player 1 has not selected a color"
+        game.current_turn = state[0]
+        board_str = ast.literal_eval(state[1])
+        game.board = board_str
+        game.game_result = state[2]
+        game.player1 = state[3]
+        game.player2 = state[4]
+        game.remaining_moves = state[5]
     return render_template("p2Join.html", status=game.player2)
 
 

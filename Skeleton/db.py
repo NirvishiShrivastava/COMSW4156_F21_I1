@@ -17,7 +17,7 @@ def init_db():
                      ', remaining_moves INT)')
         print('Database Online, table created')
     except Error as e:
-        print(e)
+        raise e
 
     finally:
         if conn:
@@ -32,7 +32,18 @@ Insert Tuple into table
 
 
 def add_move(move):  # will take in a tuple
-    pass
+    try:
+        conn = sqlite3.connect('sqlite_db')
+        cursor = conn.cursor()
+
+        cursor.execute('INSERT INTO GAME VALUES(?, ?, ?, ?, ?, ?)', move)
+        conn.commit()
+
+    except Error as e:
+        raise e
+    finally:
+        if conn:
+            conn.close()
 
 
 '''
@@ -44,7 +55,19 @@ return (current_turn, board, winner, player1, player2, remaining_moves)
 def getMove():
     # will return tuple(current_turn, board, winner, player1, player2,
     # remaining_moves) or None if db fails
-    pass
+    try:
+        conn = sqlite3.connect('sqlite_db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM GAME WHERE remaining_moves = (SELECT MIN(remaining_moves) FROM GAME)")
+        row = cursor.fetchone()
+
+    except Error as e:
+        print(e)
+
+    finally:
+        if conn:
+            conn.close()
+    return row
 
 
 '''
