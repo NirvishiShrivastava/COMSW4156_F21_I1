@@ -161,8 +161,9 @@ class Gameboard():
             self.current_turn = 'p2' if turn == 'p1' else 'p1'
             self.remaining_moves -= 1
 
+            who_played = 'p1' if self.current_turn == 'p2' else 'p2'
             # Add details to the database
-            move_db = (self.current_turn, str(self.board), winner, self.player1, self.player2, self.remaining_moves)
+            move_db = (who_played, str(self.board), winner, self.player1, self.player2, self.remaining_moves)
             db.add_move(move_db)
 
         return invalid, reason, winner

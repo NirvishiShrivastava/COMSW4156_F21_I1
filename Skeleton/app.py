@@ -61,7 +61,7 @@ def player1_config():
         p1color_picked = request.args.get('color')
         game.player1 = p1color_picked
     else:
-        game.current_turn = state[0]
+        game.current_turn = 'p1' if state[0] == 'p2' else 'p2'
         board_str = ast.literal_eval(state[1])
         game.board = board_str
         game.game_result = state[2]
@@ -92,7 +92,7 @@ def p2Join():
         else:
             game.player2 = "Error - Player 1 has not selected a color"
     else:
-        game.current_turn = state[0]
+        game.current_turn = 'p1' if state[0] == 'p2' else 'p2'
         board_str = ast.literal_eval(state[1])
         game.board = board_str
         game.game_result = state[2]
